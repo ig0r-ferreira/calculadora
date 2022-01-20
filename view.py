@@ -1,43 +1,77 @@
 import operacoes as opmat
+import re as regex
+
+
+def obter_exp_prioritaria(exp):
+    div = exp.find('/')
+    mult = exp.find('*')
+    soma = exp.find('+')
+    sub = exp.find('-')
+
+    if div != -1 and (mult == -1 or div < mult):
+        return regex.findall(r'-?\d*\.?\d+\s?/\s?-?\d*\.?\d+', exp)[0]
+    if mult != -1 and (div == -1 or div > mult):
+        return regex.findall(r'-?\d*\.?\d+\s?\*\s?-?\d*\.?\d+', exp)[0]
+    if soma != -1 and (sub == -1 or soma < sub):
+        return regex.findall(r'-?\d*\.?\d+\s?\+\s?-?\d*\.?\d+', exp)[0]
+    if sub != -1 and (soma == -1 or soma > sub):
+        return regex.findall(r'-?\d*\.?\d+\s?-\s?-?\d*\.?\d+', exp)[0]
 
 
 def calc_exp_simples(exp):
-    exp = exp.replace('(', '').replace(')', '')
-    if '/' in exp:
-        exp = exp.replace(' / ', ' ')
-        operandos = [float(o) for o in exp.split(' ')]
-        result = opmat.dividir(*operandos)
-    elif '*' in exp:
-        exp = exp.replace(' * ', ' ')
-        operandos = [float(o) for o in exp.split(' ')]
-        result = opmat.multiplicar(*operandos)
-    elif '+' in exp:
-        exp = exp.replace(' + ', ' ')
-        operandos = [float(o) for o in exp.split(' ')]
-        result = opmat.dividir(*operandos)
-    else:
-        exp = exp.replace(' - ', ' ')
-        operandos = [float(o) for o in exp.split(' ')]
-        result = opmat.dividir(*operandos)
+    while True:
+        exp_priort = obter_exp_prioritaria(exp)
+        print(exp_priort, end=' = ')
+        if exp_priort is None:
+            return exp
 
-    return result
+        if '/' in exp_priort:
+            elementos = regex.split(r'/', exp_priort)
+            resultado = opmat.dividir(*[float(e) for e in elementos])
+
+        elif '*' in exp_priort:
+            elementos = regex.split(r'\*', exp_priort)
+            resultado = opmat.multiplicar(*[float(e) for e in elementos])
+
+        elif '+' in exp_priort:
+            elementos = regex.split(r'\+', exp_priort)
+            resultado = opmat.somar(*[float(e) for e in elementos])
+
+        elif '-' in exp_priort:
+            elementos = regex.split(r'-', exp_priort)
+            resultado = opmat.subtrair(*[float(e) for e in elementos])
+        else:
+            resultado = None
+
+        print(resultado)
+        exp = exp.replace(exp_priort, str(resultado))
 
 
-expressao = '2 + 4 + 3 * 3 - (3 * (30 / 10))'
-total_parenteses = expressao.count('(')
+def calc_exp_complex(exp):
+    if exp.count('(') != exp.count(')'):
+        print('Erro: Expressão inválida!')
+        return
 
-if total_parenteses > 0:
-    abre_parenteses = []
-    fecha_parenteses = []
-    for i, c in enumerate(expressao):
-        if c == '(':
-            abre_parenteses.append(i)
-        if c == ')':
-            fecha_parenteses.append(i)
+    total_parenteses = exp.count('(')
 
-    for i in range(total_parenteses - 1, -1, -1):
-        sub_exp = expressao[abre_parenteses[i]:(fecha_parenteses[::-1][i] + 1)]
-        result_sub_exp = calc_exp_simples(sub_exp)
-        expressao = expressao.replace(sub_exp, str(result_sub_exp))
+    if total_parenteses > 0:
 
-    print(expressao)
+        for i in range(0, total_parenteses):
+            abre_parentese = exp.rfind('(')
+            fecha_parentese = exp.find(')', abre_parentese) + 1
+
+            exp_prioritaria = exp[abre_parentese:fecha_parentese]
+            result_exp = calc_exp_simples(exp_prioritaria[1:-1])
+
+            exp = exp.replace(exp_prioritaria, str(result_exp))
+
+    print(calc_exp_simples(exp))
+
+
+separador = ' '
+expressao = '2 + 4 + 3 * 3 - (3 * (30 / 10) * (8 - 2 * 2))'
+# 2 + 4 + 3 * 3 - 36
+# 2 + 4 + 9 - 36
+# 15 - 36
+# -21
+calc_exp_complex(expressao)
