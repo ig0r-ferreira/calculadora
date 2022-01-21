@@ -19,7 +19,9 @@ def limpar_visor():
 
 def calcular_resultado():
     expressao_numerica = visor['text'].replace(',', '.')
-    visor['text'] = str(calc_exp(expressao_numerica)).replace('.', ',')
+    resultado = calc_exp(expressao_numerica)
+    if resultado is not None:
+        visor['text'] = str(resultado).replace('.', ',')
 
 
 def criar_botao(local, texto, linha, coluna, acao):

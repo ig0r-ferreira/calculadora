@@ -1,6 +1,5 @@
 import re as regex
 import operacoes_mat as opmat
-import sys
 
 
 def obter_exp_prioritaria(exp_num):
@@ -62,35 +61,39 @@ def calc_exp_simples(exp_num):
             exp_num = exp_num.replace('--', '')
             return exp_num
 
-        print(f'=> Calculando por prioridade: {prox_exp}', end=' = ')
+        print(f'* Calculando por prioridade: {prox_exp}', end=' = ')
 
         if '/' in prox_exp:
             # Valores envolvidos na divisão
             elementos = regex.split(r'/', prox_exp)
-            resultado = opmat.dividir(*[float(e.replace(' ', '')) for e in elementos])
+            try:
+                result = opmat.dividir(*[float(e.replace(' ', '')) for e in elementos])
+            except ZeroDivisionError:
+                raise ZeroDivisionError()
 
         elif '*' in prox_exp:
             # Valores envolvidos na multiplicação
             elementos = regex.split(r'\*', prox_exp)
-            resultado = opmat.multiplicar(*[float(e.replace(' ', '')) for e in elementos])
+            result = opmat.multiplicar(*[float(e.replace(' ', '')) for e in elementos])
 
         elif '+' in prox_exp:
             # Valores envolvidos na soma
             elementos = regex.split(r'\+', prox_exp)
-            resultado = opmat.somar(*[float(e.replace(' ', '')) for e in elementos])
+            result = opmat.somar(*[float(e.replace(' ', '')) for e in elementos])
 
         elif '-' in prox_exp:
             # Valores envolvidos na subtração
             elementos = regex.findall(r'-?\s?\d*\.?\d+\s?', prox_exp)
-            resultado = opmat.somar(*[float(e.replace(' ', '')) for e in elementos])
-        else:
-            resultado = None
+            result = opmat.somar(*[float(e.replace(' ', '')) for e in elementos])
 
-        print(resultado)
+        else:
+            result = None
+
+        print(result)
 
         # Na expressão original, substitui a expressão identificada como prioritária
         # pelo resultado dela
-        exp_num = exp_num.replace(prox_exp, str(resultado))
+        exp_num = exp_num.replace(prox_exp, str(result))
 
 
 def calc_exp(exp_num):
@@ -111,7 +114,7 @@ def calc_exp(exp_num):
         }
     ]
 
-    print(f'\n-- Expressão original: {exp_num}')
+    print(f'\n>>> Expressão númerica inicial: {exp_num}')
 
     # Para cada agrupador, são eles: () [] {}
     for agrup in agrupadores:
@@ -120,7 +123,9 @@ def calc_exp(exp_num):
 
         # Verifica se há algum agrupador que não foi aberto ou fechado corretamente
         if quant_abre != quant_fecha:
-            sys.exit('Erro: Expressão inválida!')
+            print('\n\033[1;31mErro: Operação inválida!\033[m')
+            return None
+
         elif quant_abre == quant_fecha == 0:
             # Se o agrupador não for encontrado, pula para o próximo seguindo
             # a ordem de prioridade
@@ -135,13 +140,29 @@ def calc_exp(exp_num):
                 exp_no_agrupador = exp_num[abre_agrupador:fecha_agrupador + 1]
 
                 # Calcula o resultado da expressão
-                result = calc_exp_simples(exp_no_agrupador[1:-1])
+                try:
+                    result = calc_exp_simples(exp_no_agrupador[1:-1])
+                except ZeroDivisionError:
+                    return None
+
                 # Na expressão original substitui a expressão contida no agrupador
                 # pelo resultado dela
                 exp_num = exp_num.replace(exp_no_agrupador, str(result))
 
-                print(f'\n-- Expressão simplificada: {exp_num}')
+                print(f'>> Expressão simplificada: {exp_num}')
 
     # Retorna a expressão numérica simplificada após ter calculado as expressões
     # de todos os agrupadores
-    return float(calc_exp_simples(exp_num))
+    try:
+        resultado_final = float(calc_exp_simples(exp_num))
+        resultado_final = int(resultado_final) if resultado_final.is_integer() else resultado_final
+
+        print(f'> Resultado final: {resultado_final}')
+        return resultado_final
+
+    except ValueError:
+        print('\n\033[1;31mErro: Operação inválida!\033[m')
+        return None
+
+    except ZeroDivisionError:
+        return None

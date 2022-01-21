@@ -1,6 +1,3 @@
-import sys
-
-
 def somar(*elementos):
     return sum(elementos)
 
@@ -31,6 +28,7 @@ def dividir(*elementos):
                 continue
             result /= e
     except ZeroDivisionError:
-        sys.exit('Erro: Não é possível efetuar uma divisão por zero!')
+        print('\n\033[1;31mErro: Não é possível efetuar uma divisão por zero!\033[m')
+        raise ZeroDivisionError()
     else:
         return result
