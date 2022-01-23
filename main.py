@@ -1,37 +1,42 @@
-import tkinter.font
 from tkinter import *
+from tkinter import messagebox
+import tkinter.font as tkfont
 from functools import partial
 
 
-def digitar(e):
-    tela_exibicao['text'] = tela_exibicao['text'] + str(e)
+def digitar(c):
+    visor['text'] = visor['text'] + str(c)
 
 
 def apagar():
-    tela_exibicao['text'] = tela_exibicao['text'][:-1]
+    visor['text'] = visor['text'][:-1]
 
 
 def limpar_visor():
-    tela_exibicao['text'] = ''
+    visor['text'] = ''
 
 
 def calcular():
     from expnum import calc_exp
 
-    expressao_numerica = tela_exibicao['text'].replace(',', '.')
-    resultado = calc_exp(expressao_numerica)
-    if resultado is not None:
-        tela_exibicao['text'] = str(resultado).replace('.', ',')
+    expressao_numerica = visor['text'].replace(',', '.')
+    try:
+        resultado = calc_exp(expressao_numerica)
+    except Exception as erro:
+        exibir_erro(erro)
+        limpar_visor()
+    else:
+        visor['text'] = str(resultado).replace('.', ',')
+
+
+def exibir_erro(msg):
+    messagebox.showerror('Erro', msg, parent=janela)
 
 
 def criar_botao(local, config):
 
-    botao = Button(local,
-                   width=config.get('width'),
-                   height=config.get('height'),
-                   text=config.get('text'),
-                   command=config.get('command')
-                   )
+    botao = Button(local, width=config.get('width'), height=config.get('height'),
+                   text=config.get('text'), command=config.get('command'))
 
     botao.grid(row=config.get('row'), column=config.get('column'), padx=6, pady=8)
 
@@ -40,7 +45,7 @@ def criar_botao(local, config):
         font_size = config.get('font').get('size')
         font_weight = config.get('font').get('weight')
 
-        botao.config(font=tkinter.font.Font(
+        botao.config(font=tkfont.Font(
             family='Lucida Console' if not font_family else font_family,
             size=15 if not font_size else font_size,
             weight='normal' if not font_weight else font_weight
@@ -58,21 +63,21 @@ def obter_config_botoes():
             {'identificador': '<=', 'acao': apagar, 'font': {}},
         ],
         [
-            {'identificador': '1', 'acao': partial(digitar, '1'), 'font': {'weight': 'bold'}},
-            {'identificador': '2', 'acao': partial(digitar, '2'), 'font': {'weight': 'bold'}},
-            {'identificador': '3', 'acao': partial(digitar, '3'), 'font': {'weight': 'bold'}},
+            {'identificador': '1', 'acao': partial(digitar, '1'), 'font': {'weight': tkfont.BOLD}},
+            {'identificador': '2', 'acao': partial(digitar, '2'), 'font': {'weight': tkfont.BOLD}},
+            {'identificador': '3', 'acao': partial(digitar, '3'), 'font': {'weight': tkfont.BOLD}},
             {'identificador': '+', 'acao': partial(digitar, '+'), 'font': {}},
         ],
         [
-            {'identificador': '4', 'acao': partial(digitar, '4'), 'font': {'weight': 'bold'}},
-            {'identificador': '5', 'acao': partial(digitar, '5'), 'font': {'weight': 'bold'}},
-            {'identificador': '6', 'acao': partial(digitar, '6'), 'font': {'weight': 'bold'}},
+            {'identificador': '4', 'acao': partial(digitar, '4'), 'font': {'weight': tkfont.BOLD}},
+            {'identificador': '5', 'acao': partial(digitar, '5'), 'font': {'weight': tkfont.BOLD}},
+            {'identificador': '6', 'acao': partial(digitar, '6'), 'font': {'weight': tkfont.BOLD}},
             {'identificador': '-', 'acao': partial(digitar, '-'), 'font': {}},
         ],
         [
-            {'identificador': '7', 'acao': partial(digitar, '7'), 'font': {'weight': 'bold'}},
-            {'identificador': '8', 'acao': partial(digitar, '8'), 'font': {'weight': 'bold'}},
-            {'identificador': '9', 'acao': partial(digitar, '9'), 'font': {'weight': 'bold'}},
+            {'identificador': '7', 'acao': partial(digitar, '7'), 'font': {'weight': tkfont.BOLD}},
+            {'identificador': '8', 'acao': partial(digitar, '8'), 'font': {'weight': tkfont.BOLD}},
+            {'identificador': '9', 'acao': partial(digitar, '9'), 'font': {'weight': tkfont.BOLD}},
             {'identificador': '*', 'acao': partial(digitar, '*'), 'font': {}},
         ],
         [
@@ -90,19 +95,25 @@ def obter_config_botoes():
     ]
 
 
+# Janela principal
 janela = Tk()
+# Título da janela
 janela.title('Calculadora')
+# Não permite expandir a tela, mantendo-a em tamanho fixo
 janela.resizable(height=False, width=False)
+# Tamanho da janela
 janela.minsize(400, 610)
 
-tela_exibicao = Label(master=janela, width=23, height=3, font=18, bg='white', fg='black')
-tela_exibicao.pack(pady=40)
-tela_exibicao.config(font=tkinter.font.Font(
+# Visor da calculadora
+visor = Label(master=janela, width=23, height=3, bg='white', fg='black')
+visor.pack(pady=40)
+visor.config(font=tkfont.Font(
     family='Lucida Console',
     size=16,
-    weight='bold'
+    weight=tkfont.BOLD
 ))
 
+# Painel de botões da calculadora
 painel_botoes = Frame(master=janela, width=100, height=100)
 painel_botoes.pack(padx=25)
 

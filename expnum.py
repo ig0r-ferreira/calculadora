@@ -68,8 +68,8 @@ def calc_exp_simples(exp_num):
             elementos = regex.split(r'/', prox_exp)
             try:
                 result = opmat.dividir(*[float(e.replace(' ', '')) for e in elementos])
-            except ZeroDivisionError:
-                raise ZeroDivisionError()
+            except ZeroDivisionError as erro:
+                raise erro
 
         elif '*' in prox_exp:
             # Valores envolvidos na multiplicação
@@ -114,7 +114,7 @@ def calc_exp(exp_num):
         }
     ]
 
-    print(f'\n>>> Expressão númerica inicial: {exp_num}')
+    print(f'\n--- Expressão númerica inicial: {exp_num}')
 
     # Para cada agrupador, são eles: () [] {}
     for agrup in agrupadores:
@@ -123,8 +123,7 @@ def calc_exp(exp_num):
 
         # Verifica se há algum agrupador que não foi aberto ou fechado corretamente
         if quant_abre != quant_fecha:
-            print('\n\033[1;31mErro: Operação inválida!\033[m')
-            return None
+            raise Exception('\nOperação inválida!')
 
         elif quant_abre == quant_fecha == 0:
             # Se o agrupador não for encontrado, pula para o próximo seguindo
@@ -142,14 +141,14 @@ def calc_exp(exp_num):
                 # Calcula o resultado da expressão
                 try:
                     result = calc_exp_simples(exp_no_agrupador[1:-1])
-                except ZeroDivisionError:
-                    return None
+                except ZeroDivisionError as erro:
+                    raise erro
 
                 # Na expressão original substitui a expressão contida no agrupador
                 # pelo resultado dela
                 exp_num = exp_num.replace(exp_no_agrupador, str(result))
 
-                print(f'>> Expressão simplificada: {exp_num}')
+                print(f'--> Expressão simplificada: {exp_num}')
 
     # Retorna a expressão numérica simplificada após ter calculado as expressões
     # de todos os agrupadores
@@ -157,12 +156,11 @@ def calc_exp(exp_num):
         resultado_final = float(calc_exp_simples(exp_num))
         resultado_final = int(resultado_final) if resultado_final.is_integer() else resultado_final
 
-        print(f'> Resultado final: {resultado_final}')
+        print(f'--- Resultado final: {resultado_final}')
         return resultado_final
 
     except ValueError:
-        print('\n\033[1;31mErro: Operação inválida!\033[m')
-        return None
+        raise ValueError('\nOperação inválida!')
 
-    except ZeroDivisionError:
-        return None
+    except ZeroDivisionError as erro:
+        raise erro

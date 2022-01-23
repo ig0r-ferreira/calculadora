@@ -28,7 +28,6 @@ def dividir(*elementos):
                 continue
             result /= e
     except ZeroDivisionError:
-        print('\n\033[1;31mErro: Não é possível efetuar uma divisão por zero!\033[m')
-        raise ZeroDivisionError()
+        raise ZeroDivisionError('\nNão é possível efetuar uma divisão por zero!')
     else:
         return result
