@@ -61,30 +61,30 @@ def calc_exp_simples(exp_num):
             exp_num = exp_num.replace('--', '')
             return exp_num
 
-        print(f'* Calculando por prioridade: {prox_exp}', end=' = ')
+        print(f'*** Calculando por prioridade: {prox_exp}', end=' = ')
 
         if '/' in prox_exp:
             # Valores envolvidos na divisão
             elementos = regex.split(r'/', prox_exp)
             try:
-                result = opmat.dividir(*[float(e.replace(' ', '')) for e in elementos])
+                result = opmat.dividir(*[e.replace(' ', '') for e in elementos])
             except ZeroDivisionError as erro:
                 raise erro
 
         elif '*' in prox_exp:
             # Valores envolvidos na multiplicação
             elementos = regex.split(r'\*', prox_exp)
-            result = opmat.multiplicar(*[float(e.replace(' ', '')) for e in elementos])
+            result = opmat.multiplicar(*[e.replace(' ', '') for e in elementos])
 
         elif '+' in prox_exp:
             # Valores envolvidos na soma
             elementos = regex.split(r'\+', prox_exp)
-            result = opmat.somar(*[float(e.replace(' ', '')) for e in elementos])
+            result = opmat.somar(*[e.replace(' ', '') for e in elementos])
 
         elif '-' in prox_exp:
             # Valores envolvidos na subtração
             elementos = regex.findall(r'-?\s?\d*\.?\d+\s?', prox_exp)
-            result = opmat.somar(*[float(e.replace(' ', '')) for e in elementos])
+            result = opmat.somar(*[e.replace(' ', '') for e in elementos])
 
         else:
             result = None
@@ -114,7 +114,7 @@ def calc_exp(exp_num):
         }
     ]
 
-    print(f'\n--- Expressão númerica inicial: {exp_num}')
+    print(f'\n<-- \033[1mExpressão númerica inicial:\033[m {exp_num}')
 
     # Para cada agrupador, são eles: () [] {}
     for agrup in agrupadores:
@@ -148,7 +148,7 @@ def calc_exp(exp_num):
                 # pelo resultado dela
                 exp_num = exp_num.replace(exp_no_agrupador, str(result))
 
-                print(f'--> Expressão simplificada: {exp_num}')
+                print(f'--- \033[1mExpressão simplificada:\033[m {exp_num}')
 
     # Retorna a expressão numérica simplificada após ter calculado as expressões
     # de todos os agrupadores
@@ -156,7 +156,7 @@ def calc_exp(exp_num):
         resultado_final = float(calc_exp_simples(exp_num))
         resultado_final = int(resultado_final) if resultado_final.is_integer() else resultado_final
 
-        print(f'--- Resultado final: {resultado_final}')
+        print(f'--> \033[1mResultado final:\033[m {resultado_final}')
         return resultado_final
 
     except ValueError:
