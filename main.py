@@ -17,14 +17,14 @@ def limpar_visor():
 
 
 def calcular():
-    from expnum import calc_exp
+    from opcalc import calcular_exp
 
-    expressao_numerica = visor['text'].replace(',', '.')
+    exp_num = visor['text'].replace(',', '.')
     try:
-        resultado = calc_exp(expressao_numerica)
+        resultado = calcular_exp(exp_num)
     except Exception as erro:
         exibir_erro(erro)
-        limpar_visor()
+        # limpar_visor()
     else:
         visor['text'] = str(resultado).replace('.', ',')
 
