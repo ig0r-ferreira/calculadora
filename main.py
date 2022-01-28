@@ -5,28 +5,28 @@ from functools import partial
 
 
 def digitar(c):
-    visor['text'] = visor['text'] + str(c)
+    conteudo_visor.set(conteudo_visor.get() + str(c))
 
 
 def apagar():
-    visor['text'] = visor['text'][:-1]
+    conteudo_visor.set(conteudo_visor.get()[:-1])
 
 
 def limpar_visor():
-    visor['text'] = ''
+    conteudo_visor.set('')
 
 
 def calcular():
     from opcalc import calcular_exp
 
-    exp_num = visor['text'].replace(',', '.')
+    exp_num = conteudo_visor.get().replace(',', '.')
     try:
         resultado = calcular_exp(exp_num)
     except Exception as erro:
         exibir_erro(erro)
         # limpar_visor()
     else:
-        visor['text'] = str(resultado).replace('.', ',')
+        conteudo_visor.set(str(resultado).replace('.', ','))
 
 
 def exibir_erro(msg):
@@ -59,7 +59,7 @@ def obter_config_botoes():
         [
             {'identificador': '(', 'acao': partial(digitar, '('), 'font': {}},
             {'identificador': ')', 'acao': partial(digitar, ')'), 'font': {}},
-            {'identificador': 'C', 'acao': limpar_visor, 'font': {}},
+            {'identificador': 'C', 'acao': limpar_visor, 'font': {'weight': tkfont.BOLD}},
             {'identificador': '<=', 'acao': apagar, 'font': {}},
         ],
         [
@@ -82,7 +82,7 @@ def obter_config_botoes():
         ],
         [
             None,
-            {'identificador': '0', 'acao': partial(digitar, '0'), 'font': {}},
+            {'identificador': '0', 'acao': partial(digitar, '0'), 'font': {'weight': tkfont.BOLD}},
             {'identificador': ',', 'acao': partial(digitar, ','), 'font': {}},
             {'identificador': '/', 'acao': partial(digitar, '/'), 'font': {}},
         ],
@@ -112,6 +112,10 @@ visor.config(font=tkfont.Font(
     size=16,
     weight=tkfont.BOLD
 ))
+
+# Conteúdo do visor
+conteudo_visor = StringVar(visor, value='')
+visor.config(textvariable=conteudo_visor)
 
 # Painel de botões da calculadora
 painel_botoes = Frame(master=janela, width=100, height=100)
