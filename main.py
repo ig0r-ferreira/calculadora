@@ -1,146 +1,98 @@
-from tkinter import *
-from tkinter import messagebox
-import tkinter.font as tkfont
-from functools import partial
+import PySimpleGUI as sg
 
 
-def digitar(c):
-    conteudo_visor.set(conteudo_visor.get() + str(c))
+sg.theme('DefaultNoMoreNagging')
+font_family = 'Tahoma'
 
-
-def apagar():
-    conteudo_visor.set(conteudo_visor.get()[:-1])
-
-
-def limpar_visor():
-    conteudo_visor.set('')
-
-
-def calcular():
-    from opcalc import calcular_exp
-
-    exp_num = conteudo_visor.get().replace(',', '.')
-    try:
-        resultado = calcular_exp(exp_num)
-    except Exception as erro:
-        exibir_erro(erro)
-        # limpar_visor()
-    else:
-        conteudo_visor.set(str(resultado).replace('.', ','))
-
-
-def exibir_erro(msg):
-    messagebox.showerror('Erro', msg, parent=janela)
-
-
-def criar_botao(local, config):
-
-    botao = Button(local, width=config.get('width'), height=config.get('height'),
-                   text=config.get('text'), command=config.get('command'))
-
-    botao.grid(row=config.get('row'), column=config.get('column'), padx=6, pady=8)
-
-    if config.get('font'):
-        font_family = config.get('font').get('family')
-        font_size = config.get('font').get('size')
-        font_weight = config.get('font').get('weight')
-
-        botao.config(font=tkfont.Font(
-            family='Lucida Console' if not font_family else font_family,
-            size=15 if not font_size else font_size,
-            weight='normal' if not font_weight else font_weight
-        ))
-
-    return botao
-
-
-def obter_config_botoes():
-    return [
-        [
-            {'identificador': '(', 'acao': partial(digitar, '('), 'font': {}},
-            {'identificador': ')', 'acao': partial(digitar, ')'), 'font': {}},
-            {'identificador': 'C', 'acao': limpar_visor, 'font': {'weight': tkfont.BOLD}},
-            {'identificador': '<=', 'acao': apagar, 'font': {}},
-        ],
-        [
-            {'identificador': '1', 'acao': partial(digitar, '1'), 'font': {'weight': tkfont.BOLD}},
-            {'identificador': '2', 'acao': partial(digitar, '2'), 'font': {'weight': tkfont.BOLD}},
-            {'identificador': '3', 'acao': partial(digitar, '3'), 'font': {'weight': tkfont.BOLD}},
-            {'identificador': '+', 'acao': partial(digitar, '+'), 'font': {}},
-        ],
-        [
-            {'identificador': '4', 'acao': partial(digitar, '4'), 'font': {'weight': tkfont.BOLD}},
-            {'identificador': '5', 'acao': partial(digitar, '5'), 'font': {'weight': tkfont.BOLD}},
-            {'identificador': '6', 'acao': partial(digitar, '6'), 'font': {'weight': tkfont.BOLD}},
-            {'identificador': '-', 'acao': partial(digitar, '-'), 'font': {}},
-        ],
-        [
-            {'identificador': '7', 'acao': partial(digitar, '7'), 'font': {'weight': tkfont.BOLD}},
-            {'identificador': '8', 'acao': partial(digitar, '8'), 'font': {'weight': tkfont.BOLD}},
-            {'identificador': '9', 'acao': partial(digitar, '9'), 'font': {'weight': tkfont.BOLD}},
-            {'identificador': '*', 'acao': partial(digitar, '*'), 'font': {}},
-        ],
-        [
-            None,
-            {'identificador': '0', 'acao': partial(digitar, '0'), 'font': {'weight': tkfont.BOLD}},
-            {'identificador': ',', 'acao': partial(digitar, ','), 'font': {}},
-            {'identificador': '/', 'acao': partial(digitar, '/'), 'font': {}},
-        ],
-        [
-            None,
-            None,
-            None,
-            {'identificador': '=', 'acao': calcular, 'font': {}},
-        ]
+layout_botoes = [
+    [
+        sg.Button('('),
+        sg.Button(')'),
+        sg.Button('C'),
+        sg.Button('<-')
+    ],
+    [
+        sg.Button('1'),
+        sg.Button('2'),
+        sg.Button('3'),
+        sg.Button('+')
+    ],
+    [
+        sg.Button('4'),
+        sg.Button('5'),
+        sg.Button('6'),
+        sg.Button('-')
+    ],
+    [
+        sg.Button('7'),
+        sg.Button('8'),
+        sg.Button('9'),
+        sg.Button('x'),
+    ],
+    [
+        sg.Button('', disabled=True),
+        sg.Button('0'),
+        sg.Button(','),
+        sg.Button('/'),
+    ],
+    [
+        sg.Button('=', size=(25, 2))
     ]
+]
 
+layout_janela = [
+    [
+        sg.Frame('', [
+            [
+                sg.Text(text='',
+                        key='visor',
+                        justification='right',
+                        text_color='black',
+                        font=(font_family, 14, 'bold'),
+                        background_color='white',
+                        size=(22, 1),
+                        pad=(10, 25))
+            ]
+        ], pad=(10, 10), element_justification='center', background_color='white')
+    ],
+    [
+        sg.Frame('', layout_botoes, pad=(10, 20), element_justification='center', border_width=0)
+    ]
+]
 
-# Janela principal
-janela = Tk()
-# Título da janela
-janela.title('Calculadora')
-# Não permite expandir a tela, mantendo-a em tamanho fixo
-janela.resizable(height=False, width=False)
-# Tamanho da janela
-janela.minsize(400, 610)
+janela = sg.Window('Calculadora', layout_janela)
 
-# Visor da calculadora
-visor = Label(master=janela, width=23, height=3, bg='white', fg='black')
-visor.pack(pady=40)
-visor.config(font=tkfont.Font(
-    family='Lucida Console',
-    size=16,
-    weight=tkfont.BOLD
-))
+for botao in list(filter(lambda e: type(e) == sg.Button, janela.element_list())):
+    font_size = 12
+    font_weight = 'bold'
+    botao.Font = (font_family, font_size, font_weight)
 
-# Conteúdo do visor
-conteudo_visor = StringVar(visor, value='')
-visor.config(textvariable=conteudo_visor)
+    if botao.Size == (None, None):
+        botao.Size = (5, 2)
 
-# Painel de botões da calculadora
-painel_botoes = Frame(master=janela, width=100, height=100)
-painel_botoes.pack(padx=25)
+while True:
+    evento, valores = janela.read()
 
-config_botoes = obter_config_botoes()
+    if evento == sg.WINDOW_CLOSED:
+        break
 
-for i, fileira in enumerate(config_botoes):
-    for j, botao in enumerate(fileira):
+    if evento not in ['C', '<-', '=']:
+        janela['visor'](janela['visor'].get() + evento)
+    elif evento == 'C':
+        janela['visor']('')
+    elif evento == '<-':
+        janela['visor'](janela['visor'].get()[:-1])
+    elif evento == '=':
+        from opcalc import calcular_exp
 
-        if botao is None:
-            continue
+        conteudo_visor = janela['visor']
 
-        criar_botao(painel_botoes, {
-            'width': 5,
-            'height': 2,
-            'text': botao.get('identificador'),
-            'command': botao.get('acao'),
-            'row': i,
-            'column': j,
-            'font': {
-                'family': botao.get('font').get('family'),
-                'size': botao.get('font').get('size'),
-                'weight': botao.get('font').get('weight')
-            }
-        })
+        exp_num = conteudo_visor.get().replace(',', '.').replace('x', '*')
+        try:
+            resultado = calcular_exp(exp_num)
+        except Exception as erro:
+            sg.PopupError(erro)
+        else:
+            conteudo_visor(str(resultado).replace('.', ','))
 
-janela.mainloop()
+janela.close()
