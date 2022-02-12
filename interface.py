@@ -1,6 +1,5 @@
 import PySimpleGUI as sg
 
-
 FAMILIA_PADRAO_FONTE = 'Tahoma'
 TAMANHO_PADRAO_FONTE = 14
 LARGURA_PADRAO_BOTAO = 6
@@ -15,7 +14,6 @@ COR_BRANCA = 'white'
 
 
 def criar_display():
-
     config_display = {
         'text': '0',
         'key': 'display',
@@ -31,21 +29,6 @@ def criar_display():
 
     display = sg.Text(**config_display)
     return display
-
-
-def config_botao_calcular(**kwargs):
-    config_botao = {
-        'button_text': '=',
-        'size': (0, 2),
-        'expand_x': True,
-        'button_color': (COR_BRANCA, COR_VERDE),
-        'pad': PAD_PADRAO_BOTAO
-    }
-
-    if kwargs:
-        config_botao.update(kwargs)
-
-    return config_botao
 
 
 def config_botao_numerico(**kwargs):
@@ -112,8 +95,8 @@ def montar_painel_botoes():
         [
             sg.Button('(', **config_botao_aux()),
             sg.Button(')', **config_botao_aux()),
-            sg.Button('<-', **config_botao_aux()),
-            sg.Button('C', **config_botao_aux(
+            sg.Button('<-', key='BackSpace:8', **config_botao_aux()),
+            sg.Button('C', key='Delete:46', **config_botao_aux(
                 size=(LARGURA_PADRAO_BOTAO * 2, 2),
                 button_color=(COR_BRANCA, COR_VERMELHA)))
         ],
@@ -133,7 +116,7 @@ def montar_painel_botoes():
             sg.Button('1', **config_botao_numerico()),
             sg.Button('2', **config_botao_numerico()),
             sg.Button('3', **config_botao_numerico()),
-            sg.Button('x', **config_botao_operacao())
+            sg.Button('x', key='*', **config_botao_operacao())
         ],
         [
             sg.Button('0', **config_botao_numerico(size=(LARGURA_PADRAO_BOTAO * 2 + 2, 2))),
@@ -141,7 +124,8 @@ def montar_painel_botoes():
             sg.Button('/', **config_botao_operacao())
         ],
         [
-            sg.Button(**config_botao_calcular())
+            sg.Button(button_text='=', size=(0, 2), expand_x=True, button_color=(COR_BRANCA, COR_VERDE),
+                      pad=PAD_PADRAO_BOTAO)
         ]
     ]
 
@@ -161,8 +145,9 @@ def gerar_interface():
     config_janela = {
         'title': 'Calculadora',
         'layout': [],
-        'background_color': COR_TEMA,
         'use_default_focus': False,
+        'return_keyboard_events': True,
+        'background_color': COR_TEMA,
         'element_justification': 'center',
         'font': f'{FAMILIA_PADRAO_FONTE} {TAMANHO_PADRAO_FONTE} bold',
         'margins': (20, 30)
