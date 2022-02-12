@@ -158,8 +158,8 @@ def calcular_exp(exp_principal):
                 elementos = [e.replace('(', '').replace(')', '') for e in elementos]
                 try:
                     result = dividir(*elementos)
-                except ZeroDivisionError as divisao_por_zero:
-                    raise divisao_por_zero
+                except ZeroDivisionError as erro:
+                    raise erro
 
             elif '*' in prox_exp:
                 separador_mult = r'\*'
@@ -210,8 +210,6 @@ def calcular_exp(exp_principal):
         }
     ]
 
-    print(f'\n<-- \033[1mExpressão inicial:\033[m {exp_principal}')
-
     # Para cada conjunto, são eles: () [] {}
     for conjunto in conjuntos:
         quant_abre = exp_principal.count(conjunto.get('abre'))
@@ -243,7 +241,6 @@ def calcular_exp(exp_principal):
 
                 # Obtém a expressão no conjunto
                 exp_no_conjunto = exp_principal[abre_conjunto:fecha_conjunto + 1]
-                print(f'--- \033[1mExpressão prioritária:\033[m {exp_no_conjunto}', end=' = ')
 
                 # Calcula o resultado da expressão
                 try:
@@ -251,13 +248,9 @@ def calcular_exp(exp_principal):
                 except ZeroDivisionError as divisao_por_zero:
                     raise divisao_por_zero
 
-                print(resultado)
-
                 # Na expressão original substitui a expressão contida no conjunto
                 # pelo resultado dela
                 exp_principal = exp_principal.replace(exp_no_conjunto, str(resultado))
-
-                print(f'--- \033[1mExpressão simplificada:\033[m {exp_principal}')
 
     # Retorna a expressão numérica simplificada após ter calculado as expressões
     # de todos os conjuntos
@@ -265,7 +258,6 @@ def calcular_exp(exp_principal):
         resultado_final = float(simplificar_exp(exp_principal))
         resultado_final = int(resultado_final) if resultado_final.is_integer() else resultado_final
 
-        print(f'--> \033[1mResultado final:\033[m {resultado_final}')
         return resultado_final
 
     except ValueError:
