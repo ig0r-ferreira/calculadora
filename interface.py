@@ -1,5 +1,4 @@
 import PySimpleGUI as sg
-from functools import partial
 
 
 FAMILIA_PADRAO_FONTE = 'Tahoma'
@@ -15,45 +14,83 @@ COR_PRETA = 'black'
 COR_BRANCA = 'white'
 
 
-def criar_botao(conteudo='', config=None):
-    if config is None:
-        config = {}
-    if conteudo != '':
-        config['button_text'] = str(conteudo)
-    return sg.Button(**config)
+def criar_display():
 
-
-def montar_painel_superior():
-
-    config_visor = {
-        'text': '',
-        'key': 'visor',
-        'size': (16, 2),
-        'expand_x': True,
+    config_display = {
+        'text': '0',
+        'key': 'display',
         'justification': 'right',
+        'size': (20, 1),
+        'expand_x': True,
         'font': f'{FAMILIA_PADRAO_FONTE} 20',
-        'relief': sg.RELIEF_GROOVE,
         'border_width': 1,
+        'relief': sg.RELIEF_GROOVE,
         'background_color': COR_BRANCA,
-        'text_color': COR_PRETA,
-        'pad': ((5, 20), (7, 7))
+        'text_color': COR_PRETA
     }
 
-    visor = sg.Text(**config_visor)
+    display = sg.Text(**config_display)
+    return display
 
-    config_botao_calcular = {
+
+def config_botao_calcular(**kwargs):
+    config_botao = {
         'button_text': '=',
-        'size': (LARGURA_PADRAO_BOTAO * 2 + 2, 2),
+        'size': (0, 2),
+        'expand_x': True,
         'button_color': (COR_BRANCA, COR_VERDE),
         'pad': PAD_PADRAO_BOTAO
     }
 
-    botao_calcular = criar_botao('=', config_botao_calcular)
+    if kwargs:
+        config_botao.update(kwargs)
 
+    return config_botao
+
+
+def config_botao_numerico(**kwargs):
+    config_botao = {
+        'size': (LARGURA_PADRAO_BOTAO, 2),
+        'button_color': (COR_PRETA, COR_TEMA),
+        'pad': PAD_PADRAO_BOTAO
+    }
+
+    if kwargs:
+        config_botao.update(kwargs)
+
+    return config_botao
+
+
+def config_botao_aux(**kwargs):
+    config_botao = {
+        'size': (LARGURA_PADRAO_BOTAO, 2),
+        'button_color': (COR_BRANCA, COR_AZUL_ESCURO),
+        'pad': PAD_PADRAO_BOTAO
+    }
+
+    if kwargs:
+        config_botao.update(kwargs)
+
+    return config_botao
+
+
+def config_botao_operacao(**kwargs):
+    config_botao = {
+        'size': (LARGURA_PADRAO_BOTAO * 2, 2),
+        'button_color': (COR_BRANCA, COR_AZUL_ESCURO),
+        'pad': PAD_PADRAO_BOTAO
+    }
+
+    if kwargs:
+        config_botao.update(kwargs)
+
+    return config_botao
+
+
+def montar_painel_superior():
     elementos_painel = [
         [
-            visor,
-            botao_calcular
+            criar_display()
         ]
     ]
 
@@ -71,40 +108,41 @@ def montar_painel_superior():
 
 
 def montar_painel_botoes():
-
-    config_botao_aux = {
-        'size': (LARGURA_PADRAO_BOTAO, 2),
-        'button_color': (COR_BRANCA, COR_AZUL_ESCURO),
-        'pad': PAD_PADRAO_BOTAO
-    }
-    config_botao_num = {
-        'size': (LARGURA_PADRAO_BOTAO, 2),
-        'button_color': (COR_PRETA, COR_TEMA),
-        'pad': PAD_PADRAO_BOTAO
-    }
-
-    # Botões da primeira fileira
-    botoes_aux1 = list(map(partial(criar_botao, config=config_botao_aux), ['(', ')', '<-']))
-    botoes_aux1.append(criar_botao('C', {
-        'size': (LARGURA_PADRAO_BOTAO * 2 + 2, 2),
-        'button_color': (COR_BRANCA, COR_VERMELHA),
-        'pad': PAD_PADRAO_BOTAO
-    }))
-
-    # Botões da segunda fileira
-    botoes_aux2 = list(map(partial(criar_botao, config=config_botao_aux), ['+', '-', '/', 'x', ',']))
-
-    # Botões da terceira fileira - Botões numéricos de 0 a 4
-    botoes_num1 = list(map(partial(criar_botao, config=config_botao_num), list(range(0, 5))))
-
-    # Botões da quarta fileira - Botões numéricos de 5 a 9
-    botoes_num2 = list(map(partial(criar_botao, config=config_botao_num), list(range(5, 10))))
-
     elementos_painel = [
-        botoes_aux1,
-        botoes_aux2,
-        botoes_num1,
-        botoes_num2
+        [
+            sg.Button('(', **config_botao_aux()),
+            sg.Button(')', **config_botao_aux()),
+            sg.Button('<-', **config_botao_aux()),
+            sg.Button('C', **config_botao_aux(
+                size=(LARGURA_PADRAO_BOTAO * 2, 2),
+                button_color=(COR_BRANCA, COR_VERMELHA)))
+        ],
+        [
+            sg.Button('7', **config_botao_numerico()),
+            sg.Button('8', **config_botao_numerico()),
+            sg.Button('9', **config_botao_numerico()),
+            sg.Button('+', **config_botao_operacao())
+        ],
+        [
+            sg.Button('4', **config_botao_numerico()),
+            sg.Button('5', **config_botao_numerico()),
+            sg.Button('6', **config_botao_numerico()),
+            sg.Button('-', **config_botao_operacao())
+        ],
+        [
+            sg.Button('1', **config_botao_numerico()),
+            sg.Button('2', **config_botao_numerico()),
+            sg.Button('3', **config_botao_numerico()),
+            sg.Button('x', **config_botao_operacao())
+        ],
+        [
+            sg.Button('0', **config_botao_numerico(size=(LARGURA_PADRAO_BOTAO * 2 + 2, 2))),
+            sg.Button(',', **config_botao_numerico()),
+            sg.Button('/', **config_botao_operacao())
+        ],
+        [
+            sg.Button(**config_botao_calcular())
+        ]
     ]
 
     config_painel = {
@@ -120,7 +158,6 @@ def montar_painel_botoes():
 
 
 def gerar_interface():
-    
     config_janela = {
         'title': 'Calculadora',
         'layout': [],
@@ -142,3 +179,17 @@ def gerar_interface():
     ])
 
     return sg.Window(**config_janela)
+
+
+if __name__ == "__main__":
+    janela = gerar_interface()
+
+    while True:
+        evento, valores = janela.read()
+
+        print(f'{evento}: {valores}')
+
+        if evento == sg.WINDOW_CLOSED:
+            break
+
+    janela.close()
