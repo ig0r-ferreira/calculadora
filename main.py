@@ -2,18 +2,70 @@ import PySimpleGUI as sg
 from interface import gerar_interface
 
 
-def obter_botao_compativel(_janela, _evento):
+def carregar_restricoes():
+    seq = display.conteudo()
+
+    if len(seq) == 0:
+        return
+
+    if seq == ESTADO_INICIAL:
+
+        janela['('].update(disabled=False)
+        janela[','].update(disabled=not INICIO_ZERO)
+
+        for _botao in ['+', '*', '/', ')']:
+            janela[_botao].update(disabled=True)
+
+    elif seq == '-':
+
+        janela['('].update(disabled=False)
+        janela['-'].update(disabled=True)
+
+        for _botao in ['+', '*', '/', ',', ')']:
+            janela[_botao].update(disabled=True)
+
+    else:
+        ultima_tecla = seq[-1]
+
+        match ultima_tecla:
+
+            case ('0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'):
+                janela['('].update(disabled=True)
+
+                for _botao in ['+', '-', '*', '/', ',', ')']:
+                    janela[_botao].update(disabled=False)
+
+            case ('+' | '-' | 'x' | '/'):
+                janela['('].update(disabled=False)
+                janela[')'].update(disabled=True)
+
+            case ',':
+                for _botao in ['+', '-', '*', '/', ',', '(', ')']:
+                    janela[_botao].update(disabled=True)
+
+            case '(':
+                janela['-'].update(disabled=False)
+
+                for _botao in ['+', '*', '/', ',']:
+                    janela[_botao].update(disabled=True)
+
+            case ')':
+                janela['('].update(disabled=True)
+                janela[','].update(disabled=True)
+
+
+def obter_botao_compativel(_evento):
     if _evento == '\r':
         return Funcoes.CALCULAR
 
-    if type(_janela.find_element(_evento, silent_on_error=True)) is sg.Button:
+    if type(janela.find_element(_evento, silent_on_error=True)) is sg.Button:
         return _evento
     return None
 
 
-def mostrar_erro(_janela, msg):
+def mostrar_erro(msg):
     sg.PopupError(msg, modal=True)
-    _janela.read(timeout=1000)
+    janela.read(timeout=1000)
 
 
 class Funcoes:
@@ -57,26 +109,27 @@ class Display:
 janela = gerar_interface()
 display = Display(janela['display'])
 
-IDs_BOTOES_NAO_INICIAIS = ['+', '/', '*', ',', ')']
-IDs_BOTOES_NAO_CONSECUTIVOS = ['+', '-', '/', '*', ',']
-BOTOES_NAO_CONSECUTIVOS = [janela[botao].ButtonText for botao in IDs_BOTOES_NAO_CONSECUTIVOS]
-
-JANELA_FECHADA = sg.WINDOW_CLOSED
-INICIOU_COM_ZERO = False
+ESTADO_INICIAL = '0'
+SAIR = sg.WINDOW_CLOSED
+INICIO_ZERO = False
 
 while True:
+
+    carregar_restricoes()
+
     evento, valores = janela.read()
 
-    if evento == JANELA_FECHADA:
+    if evento == SAIR:
         break
 
-    id_botao = obter_botao_compativel(janela, evento)
+    botao = obter_botao_compativel(evento)
 
-    if id_botao is None:
+    if botao is None:
         continue
 
-    match id_botao:
+    match botao:
         case Funcoes.BACKSPACE:
+
             if display.backspace() == '':
                 display.reset()
 
@@ -87,38 +140,30 @@ while True:
             try:
                 display.calcular()
             except Exception as erro_calcular:
-                mostrar_erro(janela, erro_calcular)
+                mostrar_erro(erro_calcular)
 
         case _:
 
+            if janela[botao].Disabled:
+                continue
+
             sequencia = display.conteudo()
 
-            if sequencia == '0':
+            if sequencia == ESTADO_INICIAL:
 
-                if id_botao == '0':
-                    INICIOU_COM_ZERO = True
+                if botao == '0':
+                    INICIO_ZERO = True
                     continue
-                elif not INICIOU_COM_ZERO:
-                    if id_botao in IDs_BOTOES_NAO_INICIAIS:
-                        continue
 
+                elif not INICIO_ZERO:
                     sequencia = ''
+
                 else:
-                    INICIOU_COM_ZERO = False
-            else:
-                if id_botao in IDs_BOTOES_NAO_CONSECUTIVOS:
+                    INICIO_ZERO = False
 
-                    if sequencia == '-':
-                        continue
+            elif botao in ['+', '-', '*', '/', ','] and sequencia[-1] in ['+', '-', 'x', '/', ',']:
+                sequencia = display.backspace()
 
-                    if sequencia[-1] in BOTOES_NAO_CONSECUTIVOS:
-                        sequencia = display.backspace()
-                    else:
-                        janela[id_botao].Disabled = True
-                else:
-                    for id_botao_nc in IDs_BOTOES_NAO_CONSECUTIVOS:
-                        janela[id_botao_nc].Disabled = False
-
-            display.mostrar(sequencia + janela[id_botao].ButtonText)
+            display.mostrar(sequencia + janela[botao].ButtonText)
 
 janela.close()

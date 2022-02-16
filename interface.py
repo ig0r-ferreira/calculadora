@@ -147,6 +147,7 @@ def gerar_interface():
         'layout': [],
         'use_default_focus': False,
         'return_keyboard_events': True,
+        'finalize': True,
         'background_color': COR_TEMA,
         'element_justification': 'center',
         'font': f'{FAMILIA_PADRAO_FONTE} {TAMANHO_PADRAO_FONTE} bold',
