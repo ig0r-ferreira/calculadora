@@ -50,6 +50,54 @@ def dividir(*elementos):
         return result
 
 
+def obter_sinais_associacao():
+    return [
+        {
+            'abre': '(',
+            'fecha': ')',
+        },
+        {
+            'abre': '[',
+            'fecha': ']',
+        },
+        {
+            'abre': '{',
+            'fecha': '}',
+        }
+    ]
+
+
+def validar_uso_sinais_associacao(exp_num):
+    for sinal in obter_sinais_associacao():
+        quant_abre = exp_num.count(sinal.get('abre'))
+        quant_fecha = exp_num.count(sinal.get('fecha'))
+
+        # Verifica se há algum sinal que não foi aberto ou fechado corretamente
+        if quant_abre != quant_fecha:
+            erro_sintaxe = 'Expressão inválida.'
+
+            if quant_abre > quant_fecha:
+                erro_sintaxe += f' Há um \'{sinal.get("abre")}\' que não foi fechado.'
+            else:
+                erro_sintaxe += f' Há um \'{sinal.get("fecha")}\' sobrando.'
+
+            raise SyntaxError(erro_sintaxe)
+
+
+def buscar_caracteres_nao_permitidos(exp_num):
+    result = regex.findall(r'[^.+\-*/()\[\]{}\d\s]', exp_num)
+    return result
+
+
+def validar_exp(exp_num):
+    result = buscar_caracteres_nao_permitidos(exp_num)
+    if len(result) > 0:
+        caracteres = ' '.join(result)
+        raise SyntaxError(f'Expressão inválida. Não use o(s) caracter(es): {caracteres}.')
+
+    validar_uso_sinais_associacao(exp_num)
+
+
 def formatar_exp(exp_num):
     exp_num = exp_num.replace(' ', '')
 
@@ -80,7 +128,6 @@ def formatar_exp(exp_num):
 
 
 def buscar_prioridade(exp_num):
-
     exp_num = formatar_exp(exp_num)
 
     div = r'\d*\.?\d+\/\d*\.?\d+|' \
@@ -135,7 +182,6 @@ def buscar_prioridade(exp_num):
 
 
 def simplificar_exp(exp_num):
-
     while True:
         # Obtém a próxima expressão a ser calculada, seguindo a prioridade
         # das operações matemáticas
@@ -144,10 +190,13 @@ def simplificar_exp(exp_num):
 
         # Caso não tenha mais nenhuma expressão para calcular retorna o resultado
         if prox_exp is None:
-            # Realiza o jogo de sinais
-            exp_num = exp_num.replace('-(-', '').replace(')', '').replace('(', '')
+            result = regex.search(r'\d*\.?\d+', exp_num).group()
 
-            return exp_num
+            # Realiza o jogo de sinais
+            if exp_num.count('-') % 2 != 0:
+                result = '-' + result
+
+            return result
 
         if '/' in prox_exp:
             separador_div = r'/'
@@ -156,8 +205,8 @@ def simplificar_exp(exp_num):
             elementos = [e.replace('(', '').replace(')', '') for e in elementos]
             try:
                 result = dividir(*elementos)
-            except ZeroDivisionError as erro_divisao:
-                raise erro_divisao
+            except ZeroDivisionError as erro_divisao_por_zero:
+                raise erro_divisao_por_zero
 
         elif '*' in prox_exp:
             separador_mult = r'\*'
@@ -195,65 +244,41 @@ def simplificar_exp(exp_num):
 
 
 def calcular_exp(exp_num):
-    conjuntos = [
-        {
-            'abre': '(',
-            'fecha': ')'
-        },
-        {
-            'abre': '[',
-            'fecha': ']'
-        },
-        {
-            'abre': '{',
-            'fecha': '}'
-        }
-    ]
 
-    # Para cada conjunto, são eles: () [] {}
-    for conjunto in conjuntos:
-        quant_abre = exp_num.count(conjunto.get('abre'))
-        quant_fecha = exp_num.count(conjunto.get('fecha'))
+    validar_exp(exp_num)
 
-        # Verifica se há algum conjunto que não foi aberto ou fechado corretamente
-        if quant_abre != quant_fecha:
-            erro_sintaxe = 'Expressão inválida!'
+    # Para cada sinal, são eles: () [] {}
+    for sinal in obter_sinais_associacao():
+        quant_abre = exp_num.count(sinal.get('abre'))
+        quant_fecha = exp_num.count(sinal.get('fecha'))
 
-            if quant_abre > quant_fecha:
-                erro_sintaxe += f' Há um \'{conjunto.get("fecha")}\' faltando.'
-            else:
-                erro_sintaxe += f' Há um \'{conjunto.get("abre")}\' faltando.'
-
-            raise SyntaxError(erro_sintaxe)
-
-        elif quant_abre == quant_fecha == 0:
-            # Se o conjunto não for encontrado, pula para o próximo seguindo
-            # a ordem de prioridade
+        # Se o sinal não for encontrado, pula para o próximo seguindo
+        # a ordem de prioridade
+        if quant_abre == quant_fecha == 0:
             continue
-        else:
-            # Para cada par de conjuntos encontrados
-            while True:
-                abre_conjunto = exp_num.rfind(conjunto.get('abre'))
-                fecha_conjunto = exp_num.find(conjunto.get('fecha'), abre_conjunto)
 
-                if abre_conjunto == fecha_conjunto == -1:
-                    break
+        # Para cada par de sinais encontrados
+        while True:
+            abre_sinal = exp_num.rfind(sinal.get('abre'))
+            fecha_sinal = exp_num.find(sinal.get('fecha'), abre_sinal)
 
-                # Obtém a expressão no conjunto
-                exp_no_conjunto = exp_num[abre_conjunto:fecha_conjunto + 1]
+            if abre_sinal == fecha_sinal == -1:
+                break
 
-                # Calcula o resultado da expressão
-                try:
-                    resultado = simplificar_exp(exp_no_conjunto)
-                except ZeroDivisionError as erro_divisao:
-                    raise erro_divisao
+            # Obtém a expressão entre os sinais de associação
+            exp_interna = exp_num[abre_sinal:fecha_sinal + 1]
 
-                # Na expressão original substitui a expressão contida no conjunto
-                # pelo resultado dela
-                exp_num = exp_num.replace(exp_no_conjunto, str(resultado))
+            # Calcula o resultado da expressão
+            try:
+                resultado = simplificar_exp(exp_interna)
+            except ZeroDivisionError as erro_divisao_por_zero:
+                raise erro_divisao_por_zero
 
-    # Retorna a expressão numérica simplificada após ter calculado as expressões
-    # de todos os conjuntos
+            # Na expressão original, substitui a expressão contida entre os sinais pelo resultado dela
+            exp_num = exp_num.replace(exp_interna, str(resultado))
+
+    # Retorna a expressão numérica simplificada após ter calculado todas as expressões
+    # entre os sinais de associação
     try:
         resultado_final = float(simplificar_exp(exp_num))
 
@@ -266,9 +291,5 @@ def calcular_exp(exp_num):
     except ValueError:
         raise ValueError('Expressão inválida!')
 
-    except ZeroDivisionError as erro_divisao:
-        raise erro_divisao
-
-
-if __name__ == "__main__":
-    print(calcular_exp('5 + 6 * 20'))
+    except ZeroDivisionError as erro_divisao_por_zero:
+        raise erro_divisao_por_zero
