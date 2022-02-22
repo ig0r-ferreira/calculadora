@@ -98,9 +98,7 @@ def validar_exp(exp_num):
     validar_uso_sinais_associacao(exp_num)
 
 
-def formatar_exp(exp_num):
-    exp_num = exp_num.replace(' ', '')
-
+def colocar_negativos_entre_parenteses(exp_num):
     negativos_sem_parenteses = r'(?:^|(?<=[^(]))-\d*\.?\d+|(?<=[(])-\d*\.?\d+(?=\*|\+|-|\/)'
 
     while True:
@@ -127,8 +125,26 @@ def formatar_exp(exp_num):
     return exp_num
 
 
+def aplicar_jogo_de_sinais(exp_num):
+    elementos = regex.findall(r'-\(-\d*\.?\d+\)', exp_num)
+    if len(elementos) > 0:
+        for e in elementos:
+            exp_num = exp_num.replace(e, '+' + regex.search(r'\d*\.?\d+', e).group())
+
+    return exp_num
+
+
+def formatar_exp(exp_num):
+    exp_num = exp_num.replace(' ', '')
+
+    exp_num = colocar_negativos_entre_parenteses(exp_num)
+
+    exp_num = aplicar_jogo_de_sinais(exp_num)
+
+    return exp_num
+
+
 def buscar_prioridade(exp_num):
-    exp_num = formatar_exp(exp_num)
 
     div = r'\d*\.?\d+\/\d*\.?\d+|' \
           r'\(-\d*\.?\d+\)\/\(-\d*\.?\d+\)|' \
@@ -190,11 +206,8 @@ def simplificar_exp(exp_num):
 
         # Caso não tenha mais nenhuma expressão para calcular retorna o resultado
         if prox_exp is None:
-            result = regex.search(r'\d*\.?\d+', exp_num).group()
 
-            # Realiza o jogo de sinais
-            if exp_num.count('-') % 2 != 0:
-                result = '-' + result
+            result = regex.search(r'-?\d*\.?\d+', exp_num).group()
 
             return result
 
@@ -234,10 +247,6 @@ def simplificar_exp(exp_num):
 
         result = str(result)
 
-        # Se o resultado for negativo adiciona os parênteses ao redor
-        if regex.search(r'-\d*\.?\d+', result):
-            result = f'({result})'
-
         # Na expressão original, substitui a expressão identificada como prioritária
         # pelo resultado dela
         exp_num = exp_num.replace(prox_exp, result)
@@ -270,17 +279,22 @@ def calcular_exp(exp_num):
 
             # Calcula o resultado da expressão
             try:
-                resultado = simplificar_exp(exp_interna)
+                resultado = simplificar_exp(exp_interna[1:-1])
             except ZeroDivisionError as erro_divisao_por_zero:
                 raise erro_divisao_por_zero
 
             # Na expressão original, substitui a expressão contida entre os sinais pelo resultado dela
             exp_num = exp_num.replace(exp_interna, str(resultado))
 
-    # Retorna a expressão numérica simplificada após ter calculado todas as expressões
-    # entre os sinais de associação
+    # Verifica se o que sobrou da expressão é o próprio resultado
+    if regex.search(r'^-?\d*\.?\d+$', exp_num) is not None:
+        resultado_final = exp_num
+    else:
+        # Calcula a expressão final após ter calculado todas as expressões entre os sinais de associação
+        resultado_final = simplificar_exp(exp_num)
+
     try:
-        resultado_final = float(simplificar_exp(exp_num))
+        resultado_final = float(resultado_final)
 
         if resultado_final.is_integer():
             # Se não é um número "quebrado" elimina as casas decimais
@@ -289,7 +303,24 @@ def calcular_exp(exp_num):
         return resultado_final
 
     except ValueError:
-        raise ValueError('Expressão inválida!')
+        raise ValueError('Erro ao calcular o resultado.')
 
     except ZeroDivisionError as erro_divisao_por_zero:
         raise erro_divisao_por_zero
+
+
+if __name__ == "__main__":
+
+    expressoes = [
+        '2 + 8 - 3 - 5 + 15',
+        '12 + [35 - (10 + 2) +2]',
+        '[(18 + 3 * 2) / 8 + 5 * 3] / 6',
+        '37 + [-25 - (-11 + 19 - 4)]',
+        '60 / {2 * [-7 + 18 / (-3 + 12)]} - [7 * (-3) - 18 / (-2) + 1]',
+        '-8 + {-5 + [(8 - 12) + (13 + 12)] - 10}',
+        '3 - {2 + (11 - 15) - [5 + (-3 + 1)] + 8}',
+        '{[(8 * 4 + 3) / 7 + (3 + 15 / 5) * 3] * 2 - (19 - 7) / 6} * 2 + 12',
+    ]
+
+    for exp in expressoes:
+        print(f'{expressoes.index(exp) + 1})\t{exp} = {calcular_exp(exp)}')
