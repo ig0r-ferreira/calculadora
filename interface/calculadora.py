@@ -154,7 +154,7 @@ class Calculadora:
         self.display(info)
 
     def calcular(self):
-        from opcalc import calcular_exp
+        from calculo.calcexpress import calcular_exp
 
         exp = self.display.get().replace(',', '.').replace('x', '*')
 
