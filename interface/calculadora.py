@@ -5,115 +5,148 @@ import json
 class Calculadora:
 
     def __init__(self):
-        self.janela = None
-        self.config = self.__carregar_config()
+        self._janela = None
+        self._display = None
+        self._config = self._carregar_config()
 
-        self.INICIO_ZERO = False
-        self.ESTADO_INICIAL = '0'
+        self._INICIO_ZERO = False
+        self._ESTADO_INICIAL = '0'
 
-        self.__criar_area_display()
-        self.__criar_area_botoes()
+        self._criar_area_display()
+        self._criar_area_botoes()
 
     @staticmethod
-    def __carregar_config():
+    def _carregar_config():
         with open('./config/config.json', 'r') as arquivo:
             config_interface = json.load(arquivo)
 
         return config_interface
 
     @staticmethod
-    def __mostrar_msg_erro(erro):
+    def _mostrar_msg_erro(erro):
         sg.PopupError(erro, modal=True)
 
-    def __criar_area_display(self):
+    def _criar_area_display(self):
 
-        self.display = sg.Text(**self.config['DISPLAY'])
+        self._display = sg.Text(**self._config['DISPLAY'])
 
-        self.config['AREA_DISPLAY']['layout'].append(
-            [self.display]
+        self._config['AREA_DISPLAY']['layout'].append(
+            [self._display]
         )
 
-        area_display = sg.Frame(**self.config['AREA_DISPLAY'])
+        area_display = sg.Frame(**self._config['AREA_DISPLAY'])
 
-        layout = self.config['JANELA']['layout']
+        layout = self._config['JANELA']['layout']
         layout.append(
             [area_display]
         )
 
-    def __criar_area_botoes(self):
+    def _criar_area_botoes(self):
+
+        self._BACKSPACE = '\u232b'
+        self._LIMPAR = 'C'
+        self._CALCULAR = '='
+
+        self._SOMA = '\u002B'
+        self._SUBTRACAO = '\u2212'
+        self._MULTIPLICACAO = '\u00D7'
+        self._DIVISAO = '\u00F7'
+        self._PARENTESE_DIREITO = '('
+        self._PARENTESE_ESQUERDO = ')'
+        self._VIRGULA = ','
 
         botoes = [
             [
-                sg.Button('(', key='(', **self.config['BOTOES_AUX'], **self.config['TODOS_BOTOES']),
-                sg.Button(')', key=')', **self.config['BOTOES_AUX'], **self.config['TODOS_BOTOES']),
-                sg.Button('<-', key='BackSpace:8', **self.config['BOTOES_AUX'], **self.config['TODOS_BOTOES']),
-                sg.Button('C', key='Delete:46', **self.config['BOTAO_LIMPAR'], **self.config['TODOS_BOTOES']),
+                sg.Button(self._PARENTESE_DIREITO, **self._config['BOTOES_AUX'], **self._config['TODOS_BOTOES']),
+                sg.Button(self._PARENTESE_ESQUERDO, **self._config['BOTOES_AUX'], **self._config['TODOS_BOTOES']),
+                sg.Button(self._BACKSPACE, **self._config['BOTOES_AUX'], **self._config['TODOS_BOTOES']),
+                sg.Button(self._LIMPAR, **self._config['BOTAO_LIMPAR'], **self._config['TODOS_BOTOES']),
             ],
             [
-                sg.Button('7', key='7', **self.config['BOTOES_NUM'], **self.config['TODOS_BOTOES']),
-                sg.Button('8', key='8', **self.config['BOTOES_NUM'], **self.config['TODOS_BOTOES']),
-                sg.Button('9', key='9', **self.config['BOTOES_NUM'], **self.config['TODOS_BOTOES']),
-                sg.Button('+', key='+', **self.config['BOTOES_OP'], **self.config['TODOS_BOTOES']),
+                sg.Button('7', **self._config['BOTOES_NUM'], **self._config['TODOS_BOTOES']),
+                sg.Button('8', **self._config['BOTOES_NUM'], **self._config['TODOS_BOTOES']),
+                sg.Button('9', **self._config['BOTOES_NUM'], **self._config['TODOS_BOTOES']),
+                sg.Button(self._SOMA, **self._config['BOTOES_OP'], **self._config['TODOS_BOTOES']),
             ],
             [
-                sg.Button('4', key='4', **self.config['BOTOES_NUM'], **self.config['TODOS_BOTOES']),
-                sg.Button('5', key='5', **self.config['BOTOES_NUM'], **self.config['TODOS_BOTOES']),
-                sg.Button('6', key='6', **self.config['BOTOES_NUM'], **self.config['TODOS_BOTOES']),
-                sg.Button('-', key='-', **self.config['BOTOES_OP'], **self.config['TODOS_BOTOES']),
+                sg.Button('4', **self._config['BOTOES_NUM'], **self._config['TODOS_BOTOES']),
+                sg.Button('5', **self._config['BOTOES_NUM'], **self._config['TODOS_BOTOES']),
+                sg.Button('6', **self._config['BOTOES_NUM'], **self._config['TODOS_BOTOES']),
+                sg.Button(self._SUBTRACAO, **self._config['BOTOES_OP'], **self._config['TODOS_BOTOES']),
             ],
             [
-                sg.Button('1', key='1', **self.config['BOTOES_NUM'], **self.config['TODOS_BOTOES']),
-                sg.Button('2', key='2', **self.config['BOTOES_NUM'], **self.config['TODOS_BOTOES']),
-                sg.Button('3', key='3', **self.config['BOTOES_NUM'], **self.config['TODOS_BOTOES']),
-                sg.Button('x', key='*', **self.config['BOTOES_OP'], **self.config['TODOS_BOTOES']),
+                sg.Button('1', **self._config['BOTOES_NUM'], **self._config['TODOS_BOTOES']),
+                sg.Button('2', **self._config['BOTOES_NUM'], **self._config['TODOS_BOTOES']),
+                sg.Button('3', **self._config['BOTOES_NUM'], **self._config['TODOS_BOTOES']),
+                sg.Button(self._MULTIPLICACAO, **self._config['BOTOES_OP'], **self._config['TODOS_BOTOES']),
             ],
             [
-                sg.Button('0', key='0', **self.config['BOTAO_ZERO'], **self.config['TODOS_BOTOES']),
-                sg.Button(',', key=',', **self.config['BOTOES_NUM'], **self.config['TODOS_BOTOES']),
-                sg.Button('/', key='/', **self.config['BOTOES_OP'], **self.config['TODOS_BOTOES']),
+                sg.Button('0', **self._config['BOTAO_ZERO'], **self._config['TODOS_BOTOES']),
+                sg.Button(self._VIRGULA, **self._config['BOTOES_NUM'], **self._config['TODOS_BOTOES']),
+                sg.Button(self._DIVISAO, **self._config['BOTOES_OP'], **self._config['TODOS_BOTOES']),
             ],
             [
-                sg.Button('=', key='=', **self.config['BOTAO_CALCULAR'], **self.config['TODOS_BOTOES']),
+                sg.Button(self._CALCULAR, **self._config['BOTAO_CALCULAR'], **self._config['TODOS_BOTOES']),
             ]
         ]
 
-        self.config['AREA_BOTOES']['layout'].extend(botoes)
+        self._config['AREA_BOTOES']['layout'].extend(botoes)
 
-        area_botoes = sg.Frame(**self.config['AREA_BOTOES'])
+        area_botoes = sg.Frame(**self._config['AREA_BOTOES'])
 
-        self.config['JANELA']['layout'].append(
+        self._config['JANELA']['layout'].append(
             [area_botoes]
         )
 
-    def __obter_botao_compativel(self, evento):
-        if evento == '\r':
-            return "="
+    def _obter_botao_compativel(self, evento):
 
-        if type(self.janela.find_element(evento, silent_on_error=True)) is sg.Button:
-            return evento
-        return None
+        match evento:
+            case '+':
+                return self._SOMA
+            case '-':
+                return self._SUBTRACAO
+            case '*':
+                return self._MULTIPLICACAO
+            case '/':
+                return self._DIVISAO
+            case 'BackSpace:8':
+                return self._BACKSPACE
+            case 'Delete:46':
+                return self._LIMPAR
+            case '\r':
+                return self._CALCULAR
+            case _:
+                if type(self._janela.find_element(evento, silent_on_error=True)) is sg.Button:
+                    return evento
+                return None
 
-    def __carregar_restricoes(self):
-        seq = self.display.get()
+    def _carregar_restricoes(self):
+        seq = self._display.get()
 
         if len(seq) == 0:
             return
 
-        if seq == self.ESTADO_INICIAL:
+        janela = self._janela
 
-            self.janela['('].update(disabled=False)
-            self.janela[','].update(disabled=not self.INICIO_ZERO)
+        if seq == self._ESTADO_INICIAL:
 
-            for botao in ['+', '*', '/', ')']:
-                self.janela[botao].update(disabled=True)
+            janela[self._PARENTESE_DIREITO].update(disabled=False)
+            janela[self._VIRGULA].update(disabled=not self._INICIO_ZERO)
 
-        elif seq == '-':
+            for botao in [
+                self._SOMA, self._MULTIPLICACAO, self._DIVISAO, self._PARENTESE_ESQUERDO
+            ]:
+                janela[botao].update(disabled=True)
 
-            self.janela['('].update(disabled=False)
-            self.janela['-'].update(disabled=True)
+        elif seq == self._SUBTRACAO:
 
-            for botao in ['+', '*', '/', ',', ')']:
-                self.janela[botao].update(disabled=True)
+            janela[self._PARENTESE_DIREITO].update(disabled=False)
+            janela[self._SUBTRACAO].update(disabled=True)
+
+            for botao in [
+                self._SOMA, self._MULTIPLICACAO, self._DIVISAO, self._VIRGULA, self._PARENTESE_ESQUERDO
+            ]:
+                janela[botao].update(disabled=True)
 
         else:
             ultima_tecla = seq[-1]
@@ -121,112 +154,133 @@ class Calculadora:
             match ultima_tecla:
 
                 case ('0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'):
-                    self.janela['('].update(disabled=True)
 
-                    for botao in ['+', '-', '*', '/', ',', ')']:
-                        self.janela[botao].update(disabled=False)
+                    janela[self._PARENTESE_ESQUERDO].update(disabled=True)
 
-                case ('+' | '-' | 'x' | '/'):
-                    self.janela['('].update(disabled=False)
-                    self.janela[')'].update(disabled=True)
+                    for botao in [
+                        self._SOMA, self._SUBTRACAO, self._MULTIPLICACAO, self._DIVISAO,
+                        self._VIRGULA, self._PARENTESE_ESQUERDO
+                    ]:
+                        janela[botao].update(disabled=False)
 
-                case ',':
-                    for botao in ['+', '-', '*', '/', ',', '(', ')']:
-                        self.janela[botao].update(disabled=True)
+                case (self._SOMA | self._SUBTRACAO | self._MULTIPLICACAO | self._DIVISAO):
 
-                case '(':
-                    self.janela['-'].update(disabled=False)
+                    janela[self._PARENTESE_DIREITO].update(disabled=False)
+                    janela[self._PARENTESE_ESQUERDO].update(disabled=True)
 
-                    for botao in ['+', '*', '/', ',']:
-                        self.janela[botao].update(disabled=True)
+                case self._VIRGULA:
 
-                case ')':
-                    self.janela['('].update(disabled=True)
-                    self.janela[','].update(disabled=True)
+                    for botao in [
+                        self._SOMA, self._SUBTRACAO, self._MULTIPLICACAO, self._DIVISAO,
+                        self._VIRGULA, self._PARENTESE_DIREITO, self._PARENTESE_ESQUERDO
+                    ]:
+                        janela[botao].update(disabled=True)
 
-    def reset_display(self):
-        self.display('0')
+                case self._PARENTESE_ESQUERDO:
 
-    def backspace_display(self):
-        self.display(self.display.get()[:-1])
+                    janela[self._SUBTRACAO].update(disabled=False)
 
-    def atualizar_display(self, info):
-        self.display(info)
+                    for botao in [
+                        self._SOMA, self._MULTIPLICACAO, self._DIVISAO, self._VIRGULA
+                    ]:
+                        janela[botao].update(disabled=True)
 
-    def calcular(self):
+                case self._PARENTESE_DIREITO:
+                    janela[self._PARENTESE_ESQUERDO].update(disabled=True)
+                    janela[self._VIRGULA].update(disabled=True)
+
+    def _reset_display(self):
+        self._display(self._ESTADO_INICIAL)
+
+    def _backspace_display(self):
+        self._display(self._display.get()[:-1])
+
+    def _atualizar_display(self, info):
+        self._display(info)
+
+    def _calcular(self):
         from calculo.calcexpress import calcular_exp
 
-        exp = self.display.get().replace(',', '.').replace('x', '*')
+        exp = self._display.get().\
+            replace(self._VIRGULA, '.'). \
+            replace(self._SOMA, '+'). \
+            replace(self._SUBTRACAO, '-').\
+            replace(self._MULTIPLICACAO, '*').\
+            replace(self._DIVISAO, '/')
 
         try:
             result_exp = calcular_exp(exp)
         except Exception as erro:
             raise erro
         else:
-            self.atualizar_display(str(result_exp).replace('.', ','))
+            result_exp = str(result_exp).replace('.', self._VIRGULA)
+            self._atualizar_display(result_exp)
 
     def finalizar(self):
-        self.janela.close()
+        self._janela.close()
 
     def iniciar(self):
 
-        self.janela = sg.Window(**self.config['JANELA'])
+        self._janela = sg.Window(**self._config['JANELA'])
 
         while True:
 
-            self.__carregar_restricoes()
+            self._carregar_restricoes()
 
-            evento, valores = self.janela.read()
+            evento, valores = self._janela.read()
 
             if evento == sg.WINDOW_CLOSED:
                 break
 
-            botao = self.__obter_botao_compativel(evento)
+            botao = self._obter_botao_compativel(evento)
 
             if botao is None:
                 continue
 
             match botao:
-                case 'BackSpace:8':
+                case self._BACKSPACE:
 
-                    self.backspace_display()
+                    self._backspace_display()
 
-                    if self.display.get() == '':
-                        self.reset_display()
+                    if self._display.get() == '':
+                        self._reset_display()
 
-                case 'Delete:46':
-                    self.reset_display()
+                case self._LIMPAR:
+                    self._reset_display()
 
-                case '=':
+                case self._CALCULAR:
                     try:
-                        self.calcular()
+                        self._calcular()
                     except Exception as erro_calcular:
-                        self.__mostrar_msg_erro(erro_calcular)
-                        self.janela.read(timeout=1000)
-
+                        self._mostrar_msg_erro(erro_calcular)
+                        self._janela.read(timeout=1000)
                 case _:
 
-                    if self.janela[botao].Disabled:
+                    if self._janela[botao].Disabled:
                         continue
 
-                    sequencia = self.display.get()
+                    sequencia = self._display.get()
 
-                    if sequencia == self.ESTADO_INICIAL:
+                    if sequencia == self._ESTADO_INICIAL:
 
                         if botao == '0':
-                            self.INICIO_ZERO = True
+                            self._INICIO_ZERO = True
                             continue
 
-                        elif not self.INICIO_ZERO:
+                        elif not self._INICIO_ZERO:
                             sequencia = ''
 
                         else:
-                            self.INICIO_ZERO = False
+                            self._INICIO_ZERO = False
 
-                    elif botao in ['+', '-', '*', '/', ','] and sequencia[-1] in ['+', '-', 'x', '/', ',']:
-                        self.backspace_display()
-                        sequencia = self.display.get()
+                    elif botao in [
+                        self._SOMA, self._SUBTRACAO, self._MULTIPLICACAO, self._DIVISAO, self._VIRGULA
+                    ] and sequencia[-1] in [
+                        self._SOMA, self._SUBTRACAO, self._MULTIPLICACAO, self._DIVISAO, self._VIRGULA
+                    ]:
+                        self._backspace_display()
+                        sequencia = self._display.get()
 
-                    self.atualizar_display(sequencia + self.janela[botao].ButtonText)
+                    self._atualizar_display(sequencia + self._janela[botao].ButtonText)
 
         self.finalizar()
