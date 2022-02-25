@@ -1,3 +1,4 @@
+from time import sleep
 import PySimpleGUI as sg
 import json
 
@@ -51,14 +52,14 @@ class Calculadora:
         self._SUBTRACAO = '\u2212'
         self._MULTIPLICACAO = '\u00D7'
         self._DIVISAO = '\u00F7'
-        self._PARENTESE_DIREITO = '('
-        self._PARENTESE_ESQUERDO = ')'
+        self._PARENTESE_ESQUERDO = '('
+        self._PARENTESE_DIREITO = ')'
         self._VIRGULA = ','
 
         botoes = [
             [
-                sg.Button(self._PARENTESE_DIREITO, **self._config['BOTOES_AUX'], **self._config['TODOS_BOTOES']),
                 sg.Button(self._PARENTESE_ESQUERDO, **self._config['BOTOES_AUX'], **self._config['TODOS_BOTOES']),
+                sg.Button(self._PARENTESE_DIREITO, **self._config['BOTOES_AUX'], **self._config['TODOS_BOTOES']),
                 sg.Button(self._BACKSPACE, **self._config['BOTOES_AUX'], **self._config['TODOS_BOTOES']),
                 sg.Button(self._LIMPAR, **self._config['BOTAO_LIMPAR'], **self._config['TODOS_BOTOES']),
             ],
@@ -130,21 +131,21 @@ class Calculadora:
 
         if seq == self._ESTADO_INICIAL:
 
-            janela[self._PARENTESE_DIREITO].update(disabled=False)
+            janela[self._PARENTESE_ESQUERDO].update(disabled=False)
             janela[self._VIRGULA].update(disabled=not self._INICIO_ZERO)
 
             for botao in [
-                self._SOMA, self._MULTIPLICACAO, self._DIVISAO, self._PARENTESE_ESQUERDO
+                self._SOMA, self._MULTIPLICACAO, self._DIVISAO, self._PARENTESE_DIREITO
             ]:
                 janela[botao].update(disabled=True)
 
         elif seq == self._SUBTRACAO:
 
-            janela[self._PARENTESE_DIREITO].update(disabled=False)
+            janela[self._PARENTESE_ESQUERDO].update(disabled=False)
             janela[self._SUBTRACAO].update(disabled=True)
 
             for botao in [
-                self._SOMA, self._MULTIPLICACAO, self._DIVISAO, self._VIRGULA, self._PARENTESE_ESQUERDO
+                self._SOMA, self._MULTIPLICACAO, self._DIVISAO, self._VIRGULA, self._PARENTESE_DIREITO
             ]:
                 janela[botao].update(disabled=True)
 
@@ -155,24 +156,32 @@ class Calculadora:
 
                 case ('0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'):
 
+                    if janela[ultima_tecla].Disabled:
+                        for num in range(0, 10):
+                            janela[f'{num}'].update(disabled=False)
+
                     janela[self._PARENTESE_ESQUERDO].update(disabled=True)
 
                     for botao in [
                         self._SOMA, self._SUBTRACAO, self._MULTIPLICACAO, self._DIVISAO,
-                        self._VIRGULA, self._PARENTESE_ESQUERDO
+                        self._VIRGULA, self._PARENTESE_DIREITO
                     ]:
                         janela[botao].update(disabled=False)
 
                 case (self._SOMA | self._SUBTRACAO | self._MULTIPLICACAO | self._DIVISAO):
 
-                    janela[self._PARENTESE_DIREITO].update(disabled=False)
-                    janela[self._PARENTESE_ESQUERDO].update(disabled=True)
+                    for num in range(0, 10):
+                        janela[f'{num}'].update(disabled=False)
+
+                    janela[self._PARENTESE_ESQUERDO].update(disabled=False)
+                    janela[self._PARENTESE_DIREITO].update(disabled=True)
+                    janela[self._VIRGULA].update(disabled=True)
 
                 case self._VIRGULA:
 
                     for botao in [
                         self._SOMA, self._SUBTRACAO, self._MULTIPLICACAO, self._DIVISAO,
-                        self._VIRGULA, self._PARENTESE_DIREITO, self._PARENTESE_ESQUERDO
+                        self._VIRGULA, self._PARENTESE_ESQUERDO, self._PARENTESE_DIREITO
                     ]:
                         janela[botao].update(disabled=True)
 
@@ -186,8 +195,12 @@ class Calculadora:
                         janela[botao].update(disabled=True)
 
                 case self._PARENTESE_DIREITO:
+
                     janela[self._PARENTESE_ESQUERDO].update(disabled=True)
                     janela[self._VIRGULA].update(disabled=True)
+
+                    for num in range(0, 10):
+                        janela[f'{num}'].update(disabled=True)
 
     def _reset_display(self):
         self._display(self._ESTADO_INICIAL)
@@ -213,8 +226,18 @@ class Calculadora:
         except Exception as erro:
             raise erro
         else:
-            result_exp = str(result_exp).replace('.', self._VIRGULA)
+            result_exp = str(result_exp).\
+                replace('.', self._VIRGULA).\
+                replace('-', self._SUBTRACAO)
             self._atualizar_display(result_exp)
+
+    def _simular_clique(self, botao):
+        cor_padrao = self._janela[botao].ButtonColor
+        self._janela[botao].update(button_color=('white', 'black'))
+        self._janela.refresh()
+        sleep(0.05)
+        self._janela[botao].update(button_color=cor_padrao)
+        self._janela.refresh()
 
     def finalizar(self):
         self._janela.close()
@@ -239,25 +262,29 @@ class Calculadora:
 
             match botao:
                 case self._BACKSPACE:
-
+                    self._simular_clique(botao)
                     self._backspace_display()
 
                     if self._display.get() == '':
                         self._reset_display()
 
                 case self._LIMPAR:
+                    self._simular_clique(botao)
                     self._reset_display()
 
                 case self._CALCULAR:
+                    self._simular_clique(botao)
                     try:
                         self._calcular()
                     except Exception as erro_calcular:
                         self._mostrar_msg_erro(erro_calcular)
                         self._janela.read(timeout=1000)
-                case _:
 
+                case _:
                     if self._janela[botao].Disabled:
                         continue
+
+                    self._simular_clique(botao)
 
                     sequencia = self._display.get()
 

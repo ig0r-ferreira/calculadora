@@ -34,13 +34,14 @@
   "AREA_BOTOES":{
     "title": "",
     "layout": [],
-    "expand_x": "True",
+    "expand_x": true,
     "element_justification": "center",
     "background_color": "#faf9f8",
     "border_width": 0
   },
   "TODOS_BOTOES": {
-    "pad": [7, 7]
+    "pad": [7, 7],
+    "enable_events": true
   },
 
   "BOTOES_AUX": {
