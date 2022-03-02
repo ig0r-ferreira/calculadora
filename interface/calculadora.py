@@ -131,6 +131,7 @@ class Calculadora:
 
         if seq == self._ESTADO_INICIAL:
 
+            janela[self._SUBTRACAO].update(disabled=False)
             janela[self._PARENTESE_ESQUERDO].update(disabled=False)
             janela[self._VIRGULA].update(disabled=not self._INICIO_ZERO)
 
@@ -149,7 +150,19 @@ class Calculadora:
             ]:
                 janela[botao].update(disabled=True)
 
+        elif len(seq) > 2 and ('e' in seq[-2:] or 'E' in seq[-2:]):
+
+            for botao in [
+                self._SOMA, self._SUBTRACAO, self._MULTIPLICACAO, self._DIVISAO,
+                self._VIRGULA, self._PARENTESE_DIREITO, self._PARENTESE_ESQUERDO
+            ]:
+                janela[botao].update(disabled=True)
+
+            for num in range(0, 10):
+                janela[f'{num}'].update(disabled=True)
+
         else:
+
             ultima_tecla = seq[-1]
 
             match ultima_tecla:
@@ -169,6 +182,12 @@ class Calculadora:
                         janela[botao].update(disabled=False)
 
                 case (self._SOMA | self._SUBTRACAO | self._MULTIPLICACAO | self._DIVISAO):
+
+                    if janela[ultima_tecla].Disabled:
+                        for botao in [
+                            self._SOMA, self._SUBTRACAO, self._MULTIPLICACAO, self._DIVISAO,
+                        ]:
+                            janela[botao].update(disabled=False)
 
                     for num in range(0, 10):
                         janela[f'{num}'].update(disabled=False)
