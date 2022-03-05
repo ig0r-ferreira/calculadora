@@ -140,6 +140,10 @@ class Calculadora:
             ]:
                 janela[botao].update(disabled=True)
 
+            if janela['0'].Disabled:
+                for num in range(0, 10):
+                    janela[f'{num}'].update(disabled=False)
+
         elif seq == self._SUBTRACAO:
 
             janela[self._PARENTESE_ESQUERDO].update(disabled=False)
