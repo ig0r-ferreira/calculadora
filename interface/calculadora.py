@@ -9,6 +9,7 @@ class Calculadora:
         self._janela = None
         self._display = None
         self._config = self._carregar_config()
+        sg.theme(self._config['TEMA'])
 
         self._INICIO_ZERO = False
         self._ESTADO_INICIAL = '0'
@@ -23,9 +24,8 @@ class Calculadora:
 
         return config_interface
 
-    @staticmethod
-    def _mostrar_msg_erro(erro):
-        sg.PopupError(erro, modal=True)
+    def _mostrar_msg_erro(self, erro):
+        sg.PopupError(erro, **self._config['POPUP_ERRO'])
 
     def _criar_area_display(self):
 
@@ -233,11 +233,11 @@ class Calculadora:
     def _calcular(self):
         from calculo.calcexpress import calcular_exp
 
-        exp = self._display.get().\
+        exp = self._display.get(). \
             replace(self._VIRGULA, '.'). \
             replace(self._SOMA, '+'). \
-            replace(self._SUBTRACAO, '-').\
-            replace(self._MULTIPLICACAO, '*').\
+            replace(self._SUBTRACAO, '-'). \
+            replace(self._MULTIPLICACAO, '*'). \
             replace(self._DIVISAO, '/')
 
         try:
@@ -245,16 +245,20 @@ class Calculadora:
         except Exception as erro:
             raise erro
         else:
-            result_exp = str(result_exp).\
-                replace('.', self._VIRGULA).\
+            result_exp = str(result_exp). \
+                replace('.', self._VIRGULA). \
                 replace('-', self._SUBTRACAO)
             self._atualizar_display(result_exp)
 
     def _simular_clique(self, botao):
         cor_padrao = self._janela[botao].ButtonColor
-        self._janela[botao].update(button_color=('white', 'black'))
+        cor_clique = cor_padrao[::-1]
+
+        self._janela[botao].update(button_color=cor_clique)
         self._janela.refresh()
+
         sleep(0.05)
+
         self._janela[botao].update(button_color=cor_padrao)
         self._janela.refresh()
 

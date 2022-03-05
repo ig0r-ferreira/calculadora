@@ -1,22 +1,21 @@
 {
+  "TEMA": "DarkTeal8",
   "JANELA":{
     "title": "Calculadora",
     "layout": [],
     "use_default_focus": false,
     "return_keyboard_events": true,
     "finalize": true,
-    "font": "Tahoma 14 bold",
-    "background_color": "#faf9f8",
     "element_justification": "center",
-    "margins": [20, 30]
+    "resizable": false
   },
   "AREA_DISPLAY":{
     "title": "",
     "layout": [],
     "expand_x": true,
-    "pad": [[7, 7], [25, 25]],
+    "pad": [[17, 17], [30, 30]],
     "element_justification": "center",
-    "background_color": "#faf9f8",
+    "background_color": "white",
     "border_width": 0
   },
   "DISPLAY": {
@@ -25,6 +24,7 @@
     "justification": "right",
     "size": [20, 1],
     "expand_x": true,
+    "pad": [[5, 5], [5, 5]],
     "font": "Tahoma 20",
     "border_width": 1,
     "relief": "groove",
@@ -35,22 +35,22 @@
     "title": "",
     "layout": [],
     "expand_x": true,
+    "pad": [[10, 10], [0, 30]],
     "element_justification": "center",
-    "background_color": "#faf9f8",
     "border_width": 0
   },
   "TODOS_BOTOES": {
+    "font": "Tahoma 14 bold",
     "pad": [7, 7],
     "enable_events": true
   },
-
   "BOTOES_AUX": {
     "size": [6, 2],
-    "button_color": ["white", "#0e2f44"]
+    "button_color": ["white", "black"]
   },
   "BOTOES_OP": {
     "size": [12, 2],
-    "button_color": ["white", "#0e2f44"]
+    "button_color": ["white", "black"]
   },
   "BOTOES_NUM": {
     "size": [6, 2],
@@ -67,6 +67,11 @@
   "BOTAO_CALCULAR": {
     "size": [0, 2],
     "expand_x": true,
-    "button_color": ["white", "#009000"]
+    "button_color": ["white", "#007700"]
+  },
+  "POPUP_ERRO": {
+    "modal": true,
+    "font": "Helvetica 10 bold",
+    "text_color": "black"
   }
 }
